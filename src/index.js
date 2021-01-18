@@ -1,7 +1,12 @@
 import formatMethodsByAS from './storageEngines/asyncStorage';
 import formatMethodsByLS from './storageEngines/localStorage';
 import formatMethodsByWX from './storageEngines/wxStorage';
-import { TIME_IN_MS, DELIMITER } from './constants';
+import {
+  ERROR_MSGS,
+  TIME_IN_MS,
+  DELIMITER,
+  STORAGE_TYPE
+ } from './constants';
 
 export default class MHStorage {
 
@@ -13,16 +18,18 @@ export default class MHStorage {
    * @param {string} [args.keyPrefix = ''] 默认存储前缀
    */
   constructor({
-    whiteList = [],
     storageEngine = null,
     storageType = '',
-    keyPrefix = ''
+    keyPrefix = '',
+    whiteList = [],
   } = {}) {
     this.SE = storageEngine;
     this.whiteList = whiteList;
-    this.storageEngine = storageEngine;
     this.storageType = storageType;
     this.keyPrefix = keyPrefix;
+    
+    // 参数检查
+    this._checkParam();
 
     // 内存缓存
     this._cache = Object.create(null);
@@ -32,6 +39,15 @@ export default class MHStorage {
 
     if (this.keyPrefix) {
       this.keyPrefix = this.keyPrefix + DELIMITER;
+    }
+  }
+
+  _checkParam() {
+    if (STORAGE_TYPE.indexOf(this.storageType) === -1) {
+      throw Error(ERROR_MSGS.storageType);
+    }
+    if (!this.SE) {
+      throw Error(ERROR_MSGS.storageEngine);
     }
   }
 
@@ -71,7 +87,7 @@ export default class MHStorage {
 
   _set(key, value, expireIn, isEnableCache) {
     if (key.indexOf(DELIMITER) !== -1) {
-      throw new Error(`key值不应该含有${DELIMITER}`);
+      throw Error(ERROR_MSGS.key);
     }
     key = this.keyPrefix + key;
     let serializeValue = JSON.stringify(value);
@@ -79,13 +95,11 @@ export default class MHStorage {
       const checkExpireIn = (t) => t.match(/[dhms]$/) && !t.split(/\D$/)[0].match(/\D/);
 
       if (!checkExpireIn(expireIn)) {
-        throw new Error('expireIn参数不合法');
+        throw Error(ERROR_MSGS.expireIn);
       }
 
       const expire = new Date().getTime()
         + TIME_IN_MS[expireIn[expireIn.length - 1]] * parseInt(expireIn.split(/\D/)[0]);
-      
-      console.log('exp', new Date(expire));
 
       serializeValue = serializeValue + DELIMITER + expire;
     }
@@ -124,7 +138,7 @@ export default class MHStorage {
     const data = (isEnableCache && cacheData)
       ? cacheData
       : this.SEMethods._getItemSync(key);
-    
+
     return this._get({key, data});
   }
 
@@ -263,5 +277,4 @@ export default class MHStorage {
     if (this.storageType === 'RN') return formatMethodsByAS.call(this);
     if (this.storageType === 'WEB') return formatMethodsByLS.call(this);
   }
-
 }
