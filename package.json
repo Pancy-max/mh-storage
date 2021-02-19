@@ -1,6 +1,6 @@
 {
   "name": "mh-storage",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "./dist/mh-storage.min.js",
   "typings": "./src/index.d.ts",

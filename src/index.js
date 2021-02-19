@@ -155,8 +155,8 @@ export default class MHStorage {
 
     try {
       return JSON.parse(value);
-    } catch {
-      return '';
+    } catch(e) {
+      return value;
     }
   }
 

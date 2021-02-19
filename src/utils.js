@@ -20,9 +20,13 @@ const getParamStrFromObj = (data = {}) => (
  * @param {object|string} data
  * @returns {object}
  */
-const jsonParse = (data) => (
-    typeof data === 'string' ? JSON.parse(data) : data
-)
+const jsonParse = (data) => {
+    try {
+        return JSON.parse(data);
+    } catch(e) {
+        return data;
+    }
+}
 
 const stringify = JSON.stringify.bind(JSON)
 
